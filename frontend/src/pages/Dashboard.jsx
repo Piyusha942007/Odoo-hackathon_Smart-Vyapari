@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Package, AlertTriangle, FileInput, Truck,
     ArrowRightLeft, AlertCircle
@@ -8,6 +8,7 @@ import {
     CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import Sidebar from '../components/Sidebar';
+import AddProductModal from '../components/AddProductModal';
 import '../styles/dashboard.css';
 
 const stockTrendData = [
@@ -16,18 +17,103 @@ const stockTrendData = [
     { name: 'Mar', TotalStock: 2400, Receipts: 500, Deliveries: 450 }
 ];
 
-const categoryData = [
-    { name: 'Electronics', Quantity: 150 },
-    { name: 'Furniture', Quantity: 30 },
-    { name: 'Supplies', Quantity: 15 }
-];
-
 export default function Dashboard() {
+    const [products, setProducts] = useState([]);
+    const [receipts, setReceipts] = useState([]);
+    const [deliveries, setDeliveries] = useState([]);
+    const [hubs, setHubs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const [prodRes, recRes, delRes, hubsRes] = await Promise.all([
+                    fetch('http://localhost:5000/api/products'),
+                    fetch('http://localhost:5000/api/receipts'),
+                    fetch('http://localhost:5000/api/deliveries'),
+                    fetch('http://localhost:5000/api/hubs')
+                ]);
+
+                const prods = await prodRes.json();
+                
+                // Mocking stock since we don't have inventory view joined yet
+                const mappedProds = prods.map(p => {
+                    const total = Math.floor(Math.random() * 50) + 1; // Mock total
+                    return {
+                        ...p,
+                        total,
+                        isLowStock: total <= (p.reorder_level || 10),
+                        isOutOfStock: total === 0
+                    };
+                });
+
+                setProducts(mappedProds);
+                setReceipts(await recRes.json());
+                setDeliveries(await delRes.json());
+                setHubs(await hubsRes.json());
+            } catch (error) {
+                console.error("Failed to load dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboardData();
+    }, []);
+
+    const lowStockCount = products.filter(p => p.isLowStock && !p.isOutOfStock).length;
+    const outOfStockCount = products.filter(p => p.isOutOfStock).length;
+    
+    // Group products by category to feed the BarChart
+    const categoryMap = products.reduce((acc, p) => {
+        const cat = p.category || 'Uncategorized';
+        acc[cat] = (acc[cat] || 0) + 1; // Count unique products per category
+        return acc;
+    }, {});
+    
+    const categoryData = Object.keys(categoryMap).map(key => ({
+        name: key,
+        Quantity: categoryMap[key]
+    }));
+
+    // Extract unique categories for filter
+    const uniqueCategories = Object.keys(categoryMap);
+
+    const handleProductAdded = (newProduct) => {
+        // Mock stock values for new product
+        const total = Math.floor(Math.random() * 50) + 1;
+        const productWithStock = {
+            ...newProduct,
+            total,
+            isLowStock: total <= (newProduct.reorder_level || 10),
+            isOutOfStock: total === 0
+        };
+        setProducts(prev => [...prev, productWithStock]);
+    };
+
     return (
         <div>
             <Sidebar />
 
             <div className="main">
+                {/* Header aligned Dashboard Items */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1F2937', margin: 0 }}>Dashboard Overview</h2>
+                    <button 
+                        onClick={() => setIsProductModalOpen(true)}
+                        className="primary-btn" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600', padding: '10px 16px', backgroundColor: '#1F3A93', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                    >
+                        <Package size={16} /> Add Product
+                    </button>
+                </div>
+
+                <AddProductModal 
+                    isOpen={isProductModalOpen} 
+                    onClose={() => setIsProductModalOpen(false)} 
+                    onSuccess={handleProductAdded} 
+                />
+
                 {/* KPI Cards Grid */}
                 <div className="kpi-grid" style={{ marginBottom: '30px' }}>
                     
@@ -36,8 +122,8 @@ export default function Dashboard() {
                             <div className="kpi-title">Total Products</div>
                             <Package size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>193</div>
-                        <span className="badge badge-green">↗ in stock</span>
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>{products.length}</div>
+                        <span className="badge badge-green">Live DB</span>
                     </div>
 
                     <div className="card">
@@ -45,7 +131,7 @@ export default function Dashboard() {
                             <div className="kpi-title">Low Stock</div>
                             <AlertTriangle size={18} color="#F97316" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#F97316', marginBottom: '15px' }}>2</div>
+                        <div className="kpi-value" style={{ color: '#F97316', marginBottom: '15px' }}>{lowStockCount}</div>
                         <span className="badge badge-orange">Needs Reorder</span>
                     </div>
 
@@ -54,35 +140,35 @@ export default function Dashboard() {
                             <div className="kpi-title">Out of Stock</div>
                             <AlertCircle size={18} color="#EF4444" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#EF4444', marginBottom: '15px' }}>0</div>
+                        <div className="kpi-value" style={{ color: '#EF4444', marginBottom: '15px' }}>{outOfStockCount}</div>
                         <span className="badge" style={{ backgroundColor: '#FEE2E2', color: '#B91C1C' }}>Critical</span>
                     </div>
 
                     <div className="card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Pending Receipts</div>
+                            <div className="kpi-title">Receipts</div>
                             <FileInput size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>2</div>
-                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>Waiting</span>
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>{receipts.length}</div>
+                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>Logged Info</span>
                     </div>
 
                     <div className="card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Pending Deliveries</div>
+                            <div className="kpi-title">Delivery Orders</div>
                             <Truck size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>2</div>
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>{deliveries.length}</div>
                         <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>In Progress</span>
                     </div>
 
                     <div className="card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Scheduled Transfers</div>
+                            <div className="kpi-title">Warehouses</div>
                             <ArrowRightLeft size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>1</div>
-                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>Scheduled</span>
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>{hubs.length}</div>
+                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>Active Hubs</span>
                     </div>
 
                 </div>
@@ -110,6 +196,9 @@ export default function Dashboard() {
                             <label style={{ display: 'block', fontSize: '12px', color: '#6B7280', fontWeight: '600', marginBottom: '10px' }}>Warehouse</label>
                             <select style={{ width: '100%', fontSize: '13px', color: '#374151', border: '1px solid #E5E7EB', borderRadius: '6px', padding: '8px 12px', outline: 'none', appearance: 'auto', backgroundColor: '#fff' }}>
                                 <option>All Warehouses</option>
+                                {hubs.map(hub => (
+                                    <option key={hub.hub_id} value={hub.hub_id}>{hub.name}</option>
+                                ))}
                             </select>
                         </div>
                         
@@ -117,6 +206,9 @@ export default function Dashboard() {
                             <label style={{ display: 'block', fontSize: '12px', color: '#6B7280', fontWeight: '600', marginBottom: '10px' }}>Category</label>
                             <select style={{ width: '100%', fontSize: '13px', color: '#374151', border: '1px solid #E5E7EB', borderRadius: '6px', padding: '8px 12px', outline: 'none', appearance: 'auto', backgroundColor: '#fff' }}>
                                 <option>All Categories</option>
+                                {uniqueCategories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
                             </select>
                         </div>
                         

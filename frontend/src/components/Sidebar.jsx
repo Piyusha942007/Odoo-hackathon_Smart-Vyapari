@@ -5,6 +5,7 @@ import {
     Truck,
     FileInput,
     ArrowRightLeft,
+    ClipboardList,
     Settings
 } from "lucide-react";
 
@@ -49,6 +50,12 @@ export default function Sidebar() {
                 <Link to="/transfers" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div className={`sidebar-item ${location.pathname === '/transfers' ? 'sidebar-active' : ''}`}>
                         <ArrowRightLeft size={18} /> Internal Transfers
+                    </div>
+                </Link>
+
+                <Link to="/ledger" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div className={`sidebar-item ${location.pathname === '/ledger' ? 'sidebar-active' : ''}`}>
+                        <ClipboardList size={18} /> Stock Ledger
                     </div>
                 </Link>
 
