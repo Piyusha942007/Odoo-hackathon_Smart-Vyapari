@@ -6,6 +6,10 @@ import StaffProducts from './pages/StaffProducts';
 import StaffReceipts from './pages/StaffReceipts';
 import StaffMoveHistory from './pages/StaffMoveHistory';
 import StaffStockLedger from './pages/StaffStockLedger';
+import StaffDeliveryOrders from './pages/StaffDeliveryOrders';
+import StaffInternalTransfers from './pages/StaffInternalTransfers';
+import StaffInventoryAdjustments from './pages/StaffInventoryAdjustments';
+import StaffWarehouseSettings from './pages/StaffWarehouseSettings';
 
 // Placeholder Pages
 const PlaceholderPage = ({ title }) => (
@@ -25,12 +29,12 @@ const StaffRoutes = () => {
         <Route path="dashboard" element={<StaffDashboard />} />
         <Route path="products" element={<StaffProducts />} />
         <Route path="receipts" element={<StaffReceipts />} />
-        <Route path="delivery-orders" element={<PlaceholderPage title="Delivery Orders" />} />
-        <Route path="internal-transfers" element={<PlaceholderPage title="Internal Transfers" />} />
-        <Route path="inventory-adjustments" element={<PlaceholderPage title="Inventory Adjustments" />} />
+        <Route path="delivery-orders" element={<StaffDeliveryOrders />} />
+        <Route path="internal-transfers" element={<StaffInternalTransfers />} />
+        <Route path="inventory-adjustments" element={<StaffInventoryAdjustments />} />
         <Route path="move-history" element={<StaffMoveHistory />} />
         <Route path="stock-ledger" element={<StaffStockLedger />} />
-        <Route path="settings" element={<PlaceholderPage title="Warehouse Settings" />} />
+        <Route path="settings" element={<StaffWarehouseSettings />} />
         
       </Route>
     </Routes>
