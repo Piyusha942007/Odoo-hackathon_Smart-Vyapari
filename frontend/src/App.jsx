@@ -11,6 +11,7 @@ import Products from './pages/Products';
 import WarehouseSettings from './pages/WarehouseSettings';
 import DeliveryOrders from './pages/Deliveries';
 import StockLedger from './pages/Ledger';
+import Receipts from './pages/Receipt';
 
 const Layout = ({ userRole }) => {
     return (
@@ -28,6 +29,7 @@ const Layout = ({ userRole }) => {
                         <Route path="/settings" element={<WarehouseSettings />} />
                         <Route path="/deliveries" element={<DeliveryOrders />} />
                         <Route path="/ledger" element={<StockLedger />} />
+                        <Route path="/receipts" element={<Receipts />} />
 
                         {/* Redirect empty path to dashboard */}
                         <Route path="/" element={<Navigate to="/dashboard" />} />
