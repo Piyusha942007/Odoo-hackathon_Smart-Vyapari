@@ -1,129 +1,93 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Repeat, Plus, Trash2 } from 'lucide-react';
+import React from 'react';
+import { Plus, MoveRight } from 'lucide-react';
 
 export default function Transfers() {
-    const navigate = useNavigate();
-    const [sourceId, setSourceId] = useState('');
-    const [destinationId, setDestinationId] = useState('');
-    const [items, setItems] = useState([{ product_id: '', quantity: 1 }]);
+  const dummyData = [
+    {
+      id: "IT001",
+      product: "Wireless Mouse",
+      quantity: 15,
+      from: "Main Warehouse",
+      to: "Store A",
+      date: "2026-03-09",
+      status: "Done"
+    },
+    {
+      id: "IT002",
+      product: "A4 Paper Ream",
+      quantity: 20,
+      from: "Main Warehouse",
+      to: "Store B",
+      date: "2026-03-14",
+      status: "Ready"
+    }
+  ];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('http://localhost:5000/api/operations', {
-                doc_type: 'internal',
-                source_location_id: sourceId,
-                destination_location_id: destinationId,
-                items
-            });
-            alert('Transfer successfully processed!');
-            navigate('/dashboard');
-        } catch (error) {
-            alert('Error processing transfer.');
-        }
-    };
-
-    return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center space-x-3">
-                <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
-                    <Repeat size={24} />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-navy">Internal Transfer</h1>
-                    <p className="text-coolgrey text-sm">Move stock between warehouses or locations.</p>
-                </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Source Warehouse ID</label>
-                        <input 
-                            type="number" 
-                            required 
-                            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-purple-500"
-                            placeholder="e.g. 1 (Main Warehouse)"
-                            value={sourceId}
-                            onChange={(e) => setSourceId(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Destination Warehouse ID</label>
-                        <input 
-                            type="number" 
-                            required 
-                            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-purple-500"
-                            placeholder="e.g. 2 (Production Floor)"
-                            value={destinationId}
-                            onChange={(e) => setDestinationId(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center border-b pb-2">
-                        <h3 className="text-lg font-semibold text-gray-800">Products to Transfer</h3>
-                        <button 
-                            type="button" 
-                            onClick={() => setItems([...items, { product_id: '', quantity: 1 }])}
-                            className="text-sm flex items-center text-blue-600 hover:text-blue-800"
-                        >
-                            <Plus size={16} className="mr-1" /> Add Line
-                        </button>
-                    </div>
-
-                    {items.map((item, idx) => (
-                        <div key={idx} className="flex items-end space-x-4">
-                            <div className="flex-1">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Product ID</label>
-                                <input 
-                                    type="number" 
-                                    required 
-                                    className="w-full border border-gray-300 rounded-md p-2"
-                                    placeholder="Product ID"
-                                    value={item.product_id}
-                                    onChange={(e) => {
-                                        const newItems = [...items];
-                                        newItems[idx].product_id = e.target.value;
-                                        setItems(newItems);
-                                    }}
-                                />
-                            </div>
-                            <div className="w-32">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Quantity</label>
-                                <input 
-                                    type="number" 
-                                    required 
-                                    min="1"
-                                    className="w-full border border-gray-300 rounded-md p-2"
-                                    value={item.quantity}
-                                    onChange={(e) => {
-                                        const newItems = [...items];
-                                        newItems[idx].quantity = Number(e.target.value);
-                                        setItems(newItems);
-                                    }}
-                                />
-                            </div>
-                            <button 
-                                type="button"
-                                onClick={() => setItems(items.filter((_, i) => i !== idx))}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-md transition"
-                            >
-                                <Trash2 size={20} />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="pt-4 flex justify-end">
-                    <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition font-medium shadow-sm">
-                        Execute Transfer
-                    </button>
-                </div>
-            </form>
+  return (
+    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#1F3A93]">Internal Transfers</h1>
+          <p className="text-[#7F8C8D] text-sm mt-1">Move inventory between warehouses</p>
         </div>
-    );
+        <button className="flex items-center gap-2 bg-[#1F3A93] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-900 transition-colors">
+          <Plus className="w-[18px] h-[18px]" /> New Transfer
+        </button>
+      </div>
+
+      {/* Table Container */}
+      <div className="bg-white border border-[#e0e0e0] shadow-sm rounded-md overflow-hidden mt-6">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead className="bg-[#fcfbfc]">
+              <tr>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">Transfer ID</th>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">Product</th>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">Quantity</th>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">From</th>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">To</th>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">Date</th>
+                <th className="px-6 py-4 text-[13px] font-semibold text-[#1F3A93] border-b border-[#e0e0e0]">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0]">
+              {dummyData.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-[#1F3A93]">{item.id}</td>
+                  <td className="px-6 py-4 text-sm text-[#7F8C8D]">{item.product}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-[#1F3A93]">{item.quantity}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-[8px] py-[2px] rounded-md text-[13px] font-medium text-[#1F3A93] border border-[#1F3A93]">
+                      {item.from}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <MoveRight className="w-4 h-4 text-[#5DADE2]" />
+                      <span className="inline-flex items-center px-[8px] py-[2px] rounded-md text-[13px] font-medium text-[#5DADE2] border border-[#5DADE2]">
+                        {item.to}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#7F8C8D]">{item.date}</td>
+                  <td className="px-6 py-4">
+                    {item.status === 'Done' ? (
+                      <span className="inline-flex items-center px-[10px] py-[2px] rounded-full text-[13px] font-medium text-white bg-[#2ECC71]">
+                        Done
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-[10px] py-[2px] rounded-full text-[13px] font-medium text-white bg-[#3498DB]">
+                        Ready
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 }

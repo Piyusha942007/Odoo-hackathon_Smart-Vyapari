@@ -6,11 +6,12 @@ import ForgotPassword from './pages/ForgotPassword';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
-import Receipts from './pages/Receipts';
+import Receipt from './pages/Receipt';
 import Deliveries from './pages/Deliveries';
 import Transfers from './pages/Transfers';
 import Adjustments from './pages/Adjustments';
 import Ledger from './pages/Ledger';
+import Profile from './pages/profile';
 
 function App() {
     return (
@@ -26,11 +27,12 @@ function App() {
                         <Route index element={<Navigate to="/dashboard" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="products" element={<Products />} />
-                        <Route path="operations/receipts" element={<Receipts />} />
+                        <Route path="operations/receipts" element={<Receipt />} />
                         <Route path="operations/deliveries" element={<Deliveries />} />
                         <Route path="operations/transfers" element={<Transfers />} />
                         <Route path="operations/adjustments" element={<Adjustments />} />
                         <Route path="ledger" element={<Ledger />} />
+                        <Route path="profile" element={<Profile />} />
                     </Route>
                 </Routes>
             </Router>
