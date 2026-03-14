@@ -1,98 +1,128 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Plus, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { getProducts } from '../services/api';
+import { Search, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import '../styles/dashboard.css';
 
 export default function Products() {
     const [products, setProducts] = useState([]);
-    const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const { data } = await axios.get('http://localhost:5000/api/products');
-                setProducts(data);
-            } catch (error) {
-                console.error("Products fetch error", error);
-            }
-        };
-        fetchProducts();
+        fetchProductsList();
     }, []);
 
-    const filtered = products.filter(p => 
-        p.name.toLowerCase().includes(search.toLowerCase()) || 
-        p.sku.toLowerCase().includes(search.toLowerCase())
-    );
+    const fetchProductsList = async () => {
+        try {
+            const res = await getProducts();
+            if (res.data && res.data.success) {
+                setProducts(res.data.products);
+            }
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-navy">Products List</h1>
-                <button className="bg-navy text-purewhite px-5 py-2.5 rounded-lg hover:bg-[#152866] transition shadow-sm font-medium flex items-center">
-                    <Plus size={20} className="mr-2" />
-                    New Product
-                </button>
-            </div>
+        <div>
+            <Sidebar />
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <div className="relative w-64">
-                        <input
-                            type="text"
-                            placeholder="Search by name or SKU..."
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                        <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            <div className="main">
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <div>
+                        <h1 className="page-title" style={{ margin: '0 0 4px 0' }}>Products</h1>
+                        <p className="page-sub" style={{ margin: 0, fontSize: '14px' }}>Manage your product inventory</p>
                     </div>
+                    <button className="primary-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600' }}>
+                        <Plus size={16} /> Add Product
+                    </button>
                 </div>
-                
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50 text-gray-500 text-sm border-b">
-                                <th className="p-4 font-medium">SKU</th>
-                                <th className="p-4 font-medium">Name</th>
-                                <th className="p-4 font-medium">UOM</th>
-                                <th className="p-4 font-medium">Current Stock</th>
-                                <th className="p-4 font-medium">Status</th>
-                                <th className="p-4 font-medium text-right">Actions</th>
+
+                {/* Main Content Area */}
+                <div className="card" style={{ padding: '0', border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden' }}>
+
+                    {/* Top Filters */}
+                    <div style={{ display: 'flex', gap: '16px', padding: '20px', borderBottom: '1px solid #E5E7EB', backgroundColor: '#fff', alignItems: 'center' }}>
+                        <div style={{ flex: '1', position: 'relative' }}>
+                            <Search size={16} color="#9CA3AF" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                            <input
+                                type="text"
+                                placeholder="Search by product name or SKU..."
+                                style={{ width: '100%', padding: '10px 16px 10px 40px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '13px', outline: 'none', color: '#374151', boxSizing: 'border-box', backgroundColor: '#F9FAFB' }}
+                            />
+                        </div>
+                        <div style={{ width: '250px' }}>
+                            <select style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '13px', outline: 'none', color: '#1F2937', fontWeight: '500', appearance: 'auto', backgroundColor: '#F9FAFB' }}>
+                                <option>All Categories</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Table */}
+                    <table className="table" style={{ width: '100%' }}>
+                        <thead style={{ backgroundColor: '#F9FAFB' }}>
+                            <tr>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>SKU</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Product Name</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Category</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Unit</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Stock Locations</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Total Stock</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Reorder Level</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px' }}>Status</th>
+                                <th style={{ padding: '16px 24px', color: '#1F3A93', fontWeight: '700', fontSize: '12px', textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 text-sm">
-                            {filtered.map(product => (
-                                <tr key={product.id} className="hover:bg-gray-50 transition">
-                                    <td className="p-4 font-medium text-gray-700">{product.sku}</td>
-                                    <td className="p-4 text-gray-900">{product.name}</td>
-                                    <td className="p-4 text-gray-500">{product.uom}</td>
-                                    <td className="p-4">
-                                        <span className="font-semibold text-gray-800">{product.current_stock}</span>
+                        <tbody>
+                            {products.map((p, index) => (
+                                <tr key={p.product_id || index} style={{ borderBottom: index < products.length - 1 ? '1px solid #E5E7EB' : 'none', backgroundColor: '#fff' }}>
+                                    <td style={{ padding: '16px 24px', fontSize: '13px', fontWeight: '600', color: '#1F3A93' }}>{p.sku}</td>
+                                    <td style={{ padding: '16px 24px', fontSize: '13px', color: '#6B7280' }}>{p.name}</td>
+                                    <td style={{ padding: '16px 24px' }}>
+                                        <span style={{ padding: '4px 12px', borderRadius: '16px', border: '1px solid #BAE6FD', color: '#0284C7', fontSize: '12px', backgroundColor: '#F0F9FF' }}>
+                                            {p.category || 'General'}
+                                        </span>
                                     </td>
-                                    <td className="p-4">
-                                        {Number(product.current_stock) < product.low_stock_threshold ? (
-                                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium border border-red-200">
-                                                Low Stock
-                                            </span>
-                                        ) : (
-                                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium border border-green-200">
-                                                In Stock
-                                            </span>
-                                        )}
+                                    <td style={{ padding: '16px 24px', fontSize: '13px', color: '#6B7280' }}>{'pcs'}</td>
+                                    <td style={{ padding: '16px 24px', fontSize: '12px', color: '#9CA3AF' }}>
+                                        <div>Main Warehouse: <span style={{ color: '#1F3A93', fontWeight: '600' }}>{p.total_stock}</span></div>
                                     </td>
-                                    <td className="p-4 text-right">
-                                        <button className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                                    <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: '700', color: '#1F3A93' }}>{p.total_stock}</td>
+                                    <td style={{ padding: '16px 24px', fontSize: '13px', color: '#6B7280' }}>{10}</td>
+                                    <td style={{ padding: '16px 24px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {Number(p.total_stock) > 10 ? (
+                                                <span style={{ backgroundColor: '#22C55E', color: 'white', padding: '4px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
+                                                    In Stock
+                                                </span>
+                                            ) : (
+                                                <>
+                                                    <span style={{ backgroundColor: '#F97316', color: 'white', padding: '4px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
+                                                        Low Stock
+                                                    </span>
+                                                    <AlertTriangle size={16} color="#F97316" />
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }} onMouseOver={(e) => e.currentTarget.style.color = '#1F3A93'} onMouseOut={(e) => e.currentTarget.style.color = '#6B7280'}>
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }} onMouseOver={(e) => e.currentTarget.style.color = '#EF4444'} onMouseOut={(e) => e.currentTarget.style.color = '#6B7280'}>
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
-                            {filtered.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" className="p-8 text-center text-gray-500">
-                                        No products found.
-                                    </td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
+
                 </div>
             </div>
         </div>

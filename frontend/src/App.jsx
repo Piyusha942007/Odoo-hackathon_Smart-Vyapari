@@ -12,6 +12,7 @@ import Transfers from './pages/Transfers';
 import Adjustments from './pages/Adjustments';
 import Ledger from './pages/Ledger';
 import Profile from './pages/profile';
+import WarehouseSettings from './pages/WarehouseSettings';
 
 function App() {
     return (
@@ -33,6 +34,7 @@ function App() {
                         <Route path="operations/adjustments" element={<Adjustments />} />
                         <Route path="ledger" element={<Ledger />} />
                         <Route path="profile" element={<Profile />} />
+                        <Route path="settings" element={<WarehouseSettings />} />
                     </Route>
                 </Routes>
             </Router>
