@@ -1,31 +1,34 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { 
+  LayoutDashboard, Box, Receipt, Truck, 
+  ArrowLeftRight, FileEdit, History, Database, Settings 
+} from 'lucide-react';
 
 const StaffSidebar = () => {
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: '📊' },
-    { name: 'Products', path: '/products', icon: '📦' },
-    { name: 'Receipts', path: '/receipts', icon: '📥' },
-    { name: 'Internal Transfers', path: '/internal-transfers', icon: '⇄' },
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} />, active: true },
+    { name: 'Products', icon: <Box size={20} /> },
+    { name: 'Receipts', icon: <Receipt size={20} /> },
+    { name: 'Delivery Orders', icon: <Truck size={20} /> },
+    { name: 'Internal Transfers', icon: <ArrowLeftRight size={20} /> },
+    { name: 'Inventory Adjustments', icon: <FileEdit size={20} /> },
+    { name: 'Move History', icon: <History size={20} /> },
+    { name: 'Stock Ledger', icon: <Database size={20} /> },
+    { name: 'Warehouse Settings', icon: <Settings size={20} /> },
   ];
 
   return (
-    <div className="h-full bg-[#1e293b] text-white p-4">
-      <div className="mb-8 px-2 font-bold text-xl">Smart Vyapari</div>
-      <nav className="space-y-1">
+    <div className="sidebar">
+      <div className="logo">
+        <div className="logo-icon">V</div>
+        <span>Smart Vyapari</span>
+      </div>
+      <nav>
         {menuItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'
-              }`
-            }
-          >
-            <span>{item.icon}</span>
-            {item.name}
-          </NavLink>
+          <div key={item.name} className={`nav-item ${item.active ? 'active' : ''}`}>
+            {item.icon}
+            <span>{item.name}</span>
+          </div>
         ))}
       </nav>
     </div>
