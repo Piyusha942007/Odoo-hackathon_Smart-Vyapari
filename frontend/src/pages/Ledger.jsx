@@ -64,30 +64,30 @@ const StockLedger = () => {
 
                 {/* Filters */}
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                    
+
                     <div className="card" style={{ flex: '1', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <Search size={18} color="#9CA3AF" />
-                        <input 
-                            type="text" 
-                            placeholder="Search by product or reference ID..." 
-                            style={{ 
-                                border: 'none', 
-                                outline: 'none', 
-                                width: '100%', 
-                                fontSize: '13px', 
-                                color: '#374151' 
-                            }} 
+                        <input
+                            type="text"
+                            placeholder="Search by product or reference ID..."
+                            style={{
+                                border: 'none',
+                                outline: 'none',
+                                width: '100%',
+                                fontSize: '13px',
+                                color: '#374151'
+                            }}
                         />
                     </div>
-                    
+
                     <div className="card" style={{ width: '250px', padding: '12px 16px' }}>
-                        <select 
-                            style={{ 
-                                width: '100%', 
-                                border: 'none', 
-                                outline: 'none', 
-                                fontSize: '13px', 
-                                color: '#1F3A93', 
+                        <select
+                            style={{
+                                width: '100%',
+                                border: 'none',
+                                outline: 'none',
+                                fontSize: '13px',
+                                color: '#1F3A93',
                                 fontWeight: '600',
                                 backgroundColor: 'transparent',
                                 appearance: 'auto'
@@ -125,13 +125,13 @@ const StockLedger = () => {
                                             {entry.date}
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
-                                            <span style={{ 
-                                                backgroundColor: typeStyle.bg, 
-                                                color: typeStyle.color, 
-                                                padding: '4px 12px', 
-                                                borderRadius: '6px', 
-                                                fontSize: '11px', 
-                                                fontWeight: 'bold' 
+                                            <span style={{
+                                                backgroundColor: typeStyle.bg,
+                                                color: typeStyle.color,
+                                                padding: '4px 12px',
+                                                borderRadius: '6px',
+                                                fontSize: '11px',
+                                                fontWeight: 'bold'
                                             }}>
                                                 {entry.type}
                                             </span>
@@ -140,12 +140,12 @@ const StockLedger = () => {
                                             {entry.product}
                                         </td>
                                         <td style={{ padding: '16px 24px' }}>
-                                            <span style={{ 
-                                                border: '1px solid #93C5FD', 
-                                                color: '#3B82F6', 
-                                                padding: '4px 10px', 
-                                                borderRadius: '6px', 
-                                                fontSize: '11px', 
+                                            <span style={{
+                                                border: '1px solid #93C5FD',
+                                                color: '#3B82F6',
+                                                padding: '4px 10px',
+                                                borderRadius: '6px',
+                                                fontSize: '11px',
                                                 fontWeight: '600',
                                                 backgroundColor: 'transparent'
                                             }}>
