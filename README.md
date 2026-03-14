@@ -36,4 +36,4 @@
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/your-username/Smart-Vyapari-CodeInventory.git
+git clone https://github.com/Piyusha942007/Odoo-hackathon_Smart-Vyapari
