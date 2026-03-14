@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --sidebar-bg: #1e293b;
   --primary-blue: #3b82f6;
@@ -13,7 +15,6 @@ body {
 
 .layout-wrapper {
   display: flex;
-  min-h-screen: 100vh;
 }
 
 /* Sidebar Styling */

@@ -19,36 +19,32 @@ const StaffSidebar = () => {
   ];
 
   return (
-    <div className="w-[260px] bg-[#223985] text-white flex flex-col h-screen shrink-0 border-r border-[#1a2b66]">
-      <div className="h-16 flex items-center px-6 shrink-0 bg-[#223985]">
+    <div className="w-[240px] bg-[#1a2f6c] text-white flex flex-col h-screen shrink-0 shadow-xl overflow-hidden z-50">
+      <div className="h-[80px] flex items-center px-6 shrink-0 pt-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-white bg-opacity-10 flex items-center justify-center">
-            <Box size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm shrink-0">
+             {/* Note: In absolute precision this is the logo image area. Placeholder icon below: */}
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-100 to-white" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-[15px] leading-tight text-white tracking-wide">Smart Vyapari</span>
-            <span className="text-[10px] text-blue-200 leading-tight">CodeInventory</span>
+            <span className="font-bold text-[16px] leading-[1.1] text-white tracking-wide">Smart Vyapari</span>
+            <span className="text-[10px] text-blue-200/80 leading-tight">CodeInventory</span>
           </div>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1">
+      <nav className="flex-1 overflow-y-auto py-6">
+        <ul className="space-y-1 px-3">
           {menuItems.map((item) => (
             <li key={item.name}>
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-6 py-2.5 text-[14px] font-medium transition-colors ${
+                  `flex items-center gap-3 px-3 py-2.5 text-[14px] font-medium transition-all duration-200 rounded-[10px] ${
                     isActive
-                      ? 'bg-[#53a7f2] text-white'
-                      : 'text-blue-100 hover:bg-[#324ba6] hover:text-white'
+                      ? 'bg-[#43a1e1] text-white shadow-sm'
+                      : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
                   }`
                 }
-                style={({ isActive }) => isActive ? { 
-                  borderTopRightRadius: '24px', 
-                  borderBottomRightRadius: '24px', 
-                  marginRight: '16px' 
-                } : { marginRight: '16px', borderTopRightRadius: '24px', borderBottomRightRadius: '24px' } }
               >
                 {item.icon}
                 <span>{item.name}</span>
