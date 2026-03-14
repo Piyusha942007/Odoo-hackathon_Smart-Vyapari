@@ -1,41 +1,22 @@
 import React from 'react';
 import { Truck, Search, ChevronDown, Package } from 'lucide-react';
+import { useState } from 'react';
+import { useWarehouse } from '../context/WarehouseContext';
 
 const StaffDeliveryOrders = () => {
-  const deliveryOrders = [
-    {
-      id: "DEL-2024-0289",
-      customer: "Retail Store Alpha",
-      dueDate: "2024-03-15",
-      items: 12,
-      totalQty: 350,
-      status: "Ready",
-    },
-    {
-      id: "DEL-2024-0290",
-      customer: "Distribution Center B",
-      dueDate: "2024-03-15",
-      items: 8,
-      totalQty: 220,
-      status: "Waiting",
-    },
-    {
-      id: "DEL-2024-0291",
-      customer: "Wholesale Partner",
-      dueDate: "2024-03-16",
-      items: 15,
-      totalQty: 480,
-      status: "Draft",
-    },
-    {
-      id: "DEL-2024-0288",
-      customer: "Online Order #5423",
-      dueDate: "2024-03-14",
-      items: 5,
-      totalQty: 85,
-      status: "Done",
+  const { deliveries, validateDelivery } = useWarehouse();
+  const [activeModalOrder, setActiveModalOrder] = useState(null);
+
+  const handlePickAndPack = (order) => {
+    setActiveModalOrder(order);
+  };
+
+  const handleValidate = () => {
+    if (activeModalOrder) {
+      validateDelivery(activeModalOrder.id);
+      setActiveModalOrder(null);
     }
-  ];
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -105,7 +86,7 @@ const StaffDeliveryOrders = () => {
               </tr>
             </thead>
             <tbody>
-              {deliveryOrders.map((order) => (
+              {deliveries.map((order) => (
                 <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors last:border-0">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 font-bold text-[#1e3a8a]">
@@ -133,7 +114,10 @@ const StaffDeliveryOrders = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       {order.status === 'Ready' && (
-                        <button className="flex items-center gap-1.5 bg-[#4cb3ed] hover:bg-sky-500 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm">
+                        <button 
+                          onClick={() => handlePickAndPack(order)}
+                          className="flex items-center gap-1.5 bg-[#4cb3ed] hover:bg-sky-500 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm"
+                        >
                           <Package size={14} /> Pick & Pack
                         </button>
                       )}
@@ -148,6 +132,84 @@ const StaffDeliveryOrders = () => {
           </table>
         </div>
       </div>
+      {/* Pick & Pack Modal */}
+      {activeModalOrder && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+            <div className="flex justify-between items-start p-6 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#ebf5ff] text-[#4cb3ed] rounded-lg">
+                  <Package size={22} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-[#1e3a8a]">Pick & Pack - {activeModalOrder.id}</h2>
+                  <p className="text-sm text-slate-500 mt-1">Check off items as you pick them from their locations</p>
+                </div>
+              </div>
+              <button onClick={() => setActiveModalOrder(null)} className="text-slate-400 hover:text-slate-600">
+                <span className="text-xl leading-none">&times;</span>
+              </button>
+            </div>
+            
+            <div className="p-6 bg-slate-50/50">
+              <div className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm mb-4">
+                <div className="text-xs text-slate-400 font-medium">Customer</div>
+                <div className="text-[#1e3a8a] font-bold text-lg">{activeModalOrder.customer}</div>
+              </div>
+              
+              <h3 className="font-bold text-[#1e3a8a] mb-3">Picking Checklist</h3>
+              <div className="space-y-3">
+                {/* Mock Item 1 */}
+                <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-start gap-3 hover:border-blue-300 transition-colors cursor-pointer">
+                  <div className="mt-1 w-5 h-5 border-2 border-slate-300 rounded flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="text-xs font-bold text-[#1e3a8a]">SKU-001-2024</div>
+                        <div className="font-medium text-slate-700">Widget Pro 500</div>
+                      </div>
+                      <div className="bg-[#1e3a8a] text-white px-2 py-1 rounded text-xs font-bold">
+                        Qty: 50
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                      <Package size={12} className="text-slate-400"/> Location: Rack A-12
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mock Item 2 */}
+                <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-start gap-3 hover:border-blue-300 transition-colors cursor-pointer">
+                  <div className="mt-1 w-5 h-5 border-2 border-slate-300 rounded flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="text-xs font-bold text-[#1e3a8a]">SKU-023-2024</div>
+                        <div className="font-medium text-slate-700">Connector XL</div>
+                      </div>
+                      <div className="bg-[#1e3a8a] text-white px-2 py-1 rounded text-xs font-bold">
+                        Qty: 100
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                      <Package size={12} className="text-slate-400"/> Location: Rack B-05
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white mt-auto">
+              <button onClick={() => setActiveModalOrder(null)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md font-semibold text-sm hover:bg-slate-50 transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleValidate} className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-semibold text-sm flex items-center gap-2 transition-colors shadow-sm">
+                <Package size={16} /> Validate & Ship
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

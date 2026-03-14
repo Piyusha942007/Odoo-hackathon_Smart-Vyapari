@@ -1,45 +1,46 @@
 import React from 'react';
 import { ClipboardList, Search, Plus, TrendingDown, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { useWarehouse } from '../context/WarehouseContext';
 
 const StaffInventoryAdjustments = () => {
-  const adjustments = [
-    {
-      id: "ADJ-2024-0087",
-      product: "Widget Pro 500",
-      sku: "SKU-001-2024",
-      location: "Rack A-12",
-      recorded: 100,
-      physical: 95,
-      difference: -5,
-      reason: "Physical count discrepancy",
-      adjustedBy: "John Doe",
-      date: "2024-03-14",
-    },
-    {
-      id: "ADJ-2024-0088",
-      product: "Connector XL",
-      sku: "SKU-023-2024",
-      location: "Rack B-05",
-      recorded: 150,
-      physical: 155,
-      difference: 5,
-      reason: "Inventory recount",
-      adjustedBy: "Jane Smith",
-      date: "2024-03-15",
-    },
-    {
-      id: "ADJ-2024-0089",
-      product: "Assembly Kit",
-      sku: "SKU-045-2024",
-      location: "Rack C-08",
-      recorded: 200,
-      physical: 185,
-      difference: -15,
-      reason: "Damaged goods removed",
-      adjustedBy: "Mike Johnson",
-      date: "2024-03-15",
-    }
-  ];
+  const { adjustments, addAdjustment } = useWarehouse();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    product: '',
+    location: '',
+    recorded: '',
+    physical: '',
+    reason: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.product || !formData.physical || !formData.recorded) return;
+
+    const recordedVal = parseInt(formData.recorded);
+    const physicalVal = parseInt(formData.physical);
+    
+    addAdjustment({
+      product: formData.product,
+      sku: 'SKU-NEW-2024',
+      location: formData.location || 'Unknown',
+      recorded: recordedVal,
+      physical: physicalVal,
+      difference: physicalVal - recordedVal,
+      reason: formData.reason,
+      adjustedBy: 'Current User', // Mock user
+      date: new Date().toISOString().split('T')[0]
+    });
+
+    setIsModalOpen(false);
+    setFormData({ product: '', location: '', recorded: '', physical: '', reason: '' });
+  };
 
   const getDifferenceStyle = (diff) => {
     if (diff > 0) {
@@ -64,7 +65,10 @@ const StaffInventoryAdjustments = () => {
             <p className="text-slate-500 text-sm mt-0.5">Reconcile physical counts with system records</p>
           </div>
         </div>
-        <button className="flex items-center gap-2 bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2.5 rounded-md font-semibold text-sm shadow-sm transition-colors">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-[#1e3a8a] hover:bg-blue-900 text-white px-4 py-2.5 rounded-md font-semibold text-sm shadow-sm transition-colors"
+        >
           <Plus size={18} /> New Adjustment
         </button>
       </div>
@@ -140,6 +144,71 @@ const StaffInventoryAdjustments = () => {
           </table>
         </div>
       </div>
+      {/* Create Adjustment Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-start p-6 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-[#1e3a8a]">New Inventory Adjustment</h2>
+                <p className="text-sm text-slate-500 mt-1">Reconcile physical counts with system records</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <span className="text-xl leading-none">&times;</span>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <form id="adjustmentForm" onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Product / SKU</label>
+                  <select name="product" required value={formData.product} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select product</option>
+                    <option value="Widget Pro 500">Widget Pro 500</option>
+                    <option value="Connector XL">Connector XL</option>
+                    <option value="Assembly Kit">Assembly Kit</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Location</label>
+                  <select name="location" required value={formData.location} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select location</option>
+                    <option value="Rack A-12">Rack A-12</option>
+                    <option value="Rack B-05">Rack B-05</option>
+                    <option value="Rack C-08">Rack C-08</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Recorded Quantity (System)</label>
+                    <input type="number" name="recorded" required value={formData.recorded} onChange={handleInputChange} placeholder="0" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Physical Quantity (Actual)</label>
+                    <input type="number" name="physical" required value={formData.physical} onChange={handleInputChange} placeholder="0" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Reason for Adjustment</label>
+                  <textarea name="reason" value={formData.reason} onChange={handleInputChange} placeholder="e.g., Physical count discrepancy, damage..." rows="2" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+              </form>
+            </div>
+
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white mt-auto">
+              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md font-semibold text-sm hover:bg-slate-50 transition-colors">
+                Cancel
+              </button>
+              <button form="adjustmentForm" type="submit" className="px-5 py-2.5 bg-[#1e3a8a] text-white rounded-md font-semibold text-sm hover:bg-blue-900 shadow-sm transition-colors">
+                Confirm Adjustment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

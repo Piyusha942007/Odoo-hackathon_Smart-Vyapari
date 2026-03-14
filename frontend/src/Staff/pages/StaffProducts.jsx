@@ -4,59 +4,52 @@ import {
   MoreVertical, ChevronDown
 } from 'lucide-react';
 
+import { useWarehouse } from '../context/WarehouseContext';
+
 const StaffProducts = () => {
-  const products = [
-    {
-      id: "SKU-001-2024",
-      name: "Widget Pro 500",
-      status: "In Stock",
-      stock: 150,
-      minStock: 20,
-      category: "Electronics",
-      price: "$29.99",
-      locations: "Rack A-12, Rack B-03",
-    },
-    {
-      id: "SKU-023-2024",
-      name: "Connector XL",
-      status: "Out of Stock",
-      stock: 0,
-      minStock: 15,
-      category: "Hardware",
-      price: "$12.50",
-      locations: "Rack B-05",
-    },
-    {
-      id: "SKU-045-2024",
-      name: "Assembly Kit",
-      status: "Low Stock",
-      stock: 8,
-      minStock: 25,
-      category: "Tools",
-      price: "$89.99",
-      locations: "Rack C-08",
-    },
-    {
-      id: "SKU-078-2024",
-      name: "Mounting Bracket",
-      status: "In Stock",
-      stock: 285,
-      minStock: 30,
-      category: "Hardware",
-      price: "$15.75",
-      locations: "Rack D-15, Rack A-20",
-    },
-    {
-      id: "SKU-102-2024",
-      name: "Cable Set Premium",
-      status: "Low Stock",
-      stock: 12,
-      minStock: 40,
-      category: "Electronics",
-      price: "$45.00",
-      locations: "Rack A-20",
-    }
-  ];
+  const { products, addProduct } = useWarehouse();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    sku: '',
+    barcode: '',
+    name: '',
+    description: '',
+    category: '',
+    unit: '',
+    price: '',
+    minStock: '',
+    reorderQty: '',
+    supplier: '',
+    notes: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.sku) return; // Simple validation
+    
+    addProduct({
+      name: formData.name,
+      sku: formData.sku,
+      category: formData.category || 'Uncategorized',
+      price: parseFloat(formData.price) || 0,
+      stock: 0, // Initial stock is 0
+      minStock: parseInt(formData.minStock) || 0,
+      supplier: formData.supplier || 'Unknown',
+      locations: 'Unassigned',
+      status: 'Out of Stock' // Default status for new items with 0 stock
+    });
+    
+    setIsModalOpen(false);
+    setFormData({
+      sku: '', barcode: '', name: '', description: '', category: '', 
+      unit: '', price: '', minStock: '', reorderQty: '', supplier: '', notes: ''
+    });
+  };
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -71,7 +64,10 @@ const StaffProducts = () => {
             <p className="text-slate-500 text-sm mt-0.5">Manage your product catalog</p>
           </div>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-md font-semibold text-sm transition-colors shadow-sm">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-md font-semibold text-sm transition-colors shadow-sm"
+        >
           <Plus size={18} /> New Product
         </button>
       </div>
@@ -116,10 +112,117 @@ const StaffProducts = () => {
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {products.map((product) => {
+          // Calculate status dynamically if context provides numbers
+          let status = product.stock === 0 ? 'Out of Stock' : (product.stock <= product.minStock ? 'Low Stock' : 'In Stock');
+          // Support existing mock data status property if present
+          if (product.status && !product.stock) status = product.status;
+          
+          return <ProductCard key={product.id} product={{...product, status}} />;
+        })}
       </div>
+
+      {/* Create Product Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-start p-6 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-[#1e3a8a]">Create New Product</h2>
+                <p className="text-sm text-slate-500 mt-1">Add a new product to your inventory</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <span className="text-xl leading-none">&times;</span>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <form id="productForm" onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">SKU</label>
+                    <input type="text" name="sku" required value={formData.sku} onChange={handleInputChange} placeholder="e.g., SKU-001-2024" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm text-[#1e3a8a] font-bold">Barcode (Optional)</label>
+                    <input type="text" name="barcode" value={formData.barcode} onChange={handleInputChange} placeholder="e.g., 1234567890123" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Product Name</label>
+                  <input type="text" name="name" required value={formData.name} onChange={handleInputChange} placeholder="Enter product name" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Description (Optional)</label>
+                  <input type="text" name="description" value={formData.description} onChange={handleInputChange} placeholder="Brief description" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Category</label>
+                    <select name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select category</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Hardware">Hardware</option>
+                      <option value="Tools">Tools</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Unit of Measure</label>
+                    <select name="unit" value={formData.unit} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">Select unit</option>
+                      <option value="Pieces">Pieces</option>
+                      <option value="Boxes">Boxes</option>
+                      <option value="Pallets">Pallets</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Unit Price ($)</label>
+                    <input type="number" step="0.01" name="price" value={formData.price} onChange={handleInputChange} placeholder="0.00" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Min Stock Level</label>
+                    <input type="number" name="minStock" value={formData.minStock} onChange={handleInputChange} placeholder="20" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-[#1e3a8a]">Reorder Quantity</label>
+                    <input type="number" name="reorderQty" value={formData.reorderQty} onChange={handleInputChange} placeholder="100" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Preferred Supplier (Optional)</label>
+                  <select name="supplier" value={formData.supplier} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select supplier</option>
+                    <option value="ABC Suppliers Inc.">ABC Suppliers Inc.</option>
+                    <option value="Global Parts Ltd.">Global Parts Ltd.</option>
+                    <option value="Tech Components Co.">Tech Components Co.</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Notes (Optional)</label>
+                  <textarea name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Additional information..." rows="2" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+              </form>
+            </div>
+
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white mt-auto">
+              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-md font-semibold text-sm hover:bg-slate-50">
+                Cancel
+              </button>
+              <button form="productForm" type="submit" className="px-4 py-2 bg-[#1e3a8a] text-white rounded-md font-semibold text-sm hover:bg-blue-900 shadow-sm">
+                Create Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -144,7 +247,7 @@ const ProductCard = ({ product }) => {
           <div>
             <h3 className="font-bold text-[#1e3a8a] text-[15px]">{product.name}</h3>
             <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-              <span className="text-slate-300">≡</span> {product.id}
+              <span className="text-slate-300">≡</span> {product.sku}
             </p>
           </div>
         </div>
@@ -173,7 +276,7 @@ const ProductCard = ({ product }) => {
           <Tag size={14} className="text-slate-400" /> {product.category}
         </div>
         <div className="text-sm text-slate-500">
-          Price: <span className="font-bold text-slate-700">{product.price}</span>
+          Price: <span className="font-bold text-slate-700">{typeof product.price === 'number' ? `$${product.price.toFixed(2)}` : product.price}</span>
         </div>
         <div className="text-sm text-slate-500 truncate">
           Locations: <span className="text-slate-700">{product.locations}</span>

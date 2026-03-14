@@ -4,45 +4,40 @@ import {
   CheckCircle2, ChevronDown
 } from 'lucide-react';
 
+import { useState } from 'react';
+import { useWarehouse } from '../context/WarehouseContext';
+
 const StaffReceipts = () => {
-  const receipts = [
-    {
-      id: "RCP-2024-0156",
-      supplier: "ABC Suppliers Inc.",
-      expectedDate: "2024-03-15",
-      items: 15,
-      totalQty: 450,
-      status: "Ready",
-      canValidate: true
-    },
-    {
-      id: "RCP-2024-0157",
-      supplier: "XYZ Distribution",
-      expectedDate: "2024-03-15",
-      items: 8,
-      totalQty: 280,
-      status: "Waiting",
-      canValidate: false
-    },
-    {
-      id: "RCP-2024-0158",
-      supplier: "Global Parts Ltd.",
-      expectedDate: "2024-03-16",
-      items: 22,
-      totalQty: 650,
-      status: "Draft",
-      canValidate: false
-    },
-    {
-      id: "RCP-2024-0155",
-      supplier: "Tech Components Co.",
-      expectedDate: "2024-03-14",
-      items: 12,
-      totalQty: 320,
-      status: "Done",
-      canValidate: false
-    }
-  ];
+  const { receipts, addReceipt, validateReceipt } = useWarehouse();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    supplier: '',
+    expectedDate: '',
+    destination: '',
+    notes: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.supplier || !formData.expectedDate) return;
+
+    addReceipt({
+      supplier: formData.supplier,
+      expectedDate: formData.expectedDate,
+      destination: formData.destination || 'Main Warehouse',
+      items: Math.floor(Math.random() * 20) + 1, // Mock item count
+      totalQty: Math.floor(Math.random() * 500) + 10, // Mock qty
+      notes: formData.notes
+    });
+
+    setIsModalOpen(false);
+    setFormData({ supplier: '', expectedDate: '', destination: '', notes: '' });
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -67,7 +62,10 @@ const StaffReceipts = () => {
             <p className="text-slate-500 text-sm mt-0.5">Incoming goods from suppliers</p>
           </div>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-md font-semibold text-sm transition-colors shadow-sm">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-md font-semibold text-sm transition-colors shadow-sm"
+        >
           <Plus size={18} /> New Receipt
         </button>
       </div>
@@ -143,8 +141,11 @@ const StaffReceipts = () => {
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-2">
-                      {receipt.canValidate && (
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded border border-emerald-600 text-[13px] font-semibold transition-colors shadow-sm">
+                      {receipt.status === 'Ready' && (
+                        <button 
+                          onClick={() => validateReceipt(receipt.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded border border-emerald-600 text-[13px] font-semibold transition-colors shadow-sm"
+                        >
                           <CheckCircle2 size={14} /> Validate
                         </button>
                       )}
@@ -159,6 +160,66 @@ const StaffReceipts = () => {
           </table>
         </div>
       </div>
+      {/* Create Receipt Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-start p-6 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-[#1e3a8a]">Create New Receipt</h2>
+                <p className="text-sm text-slate-500 mt-1">Enter details for the incoming shipment</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <span className="text-xl leading-none">&times;</span>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto custom-scrollbar">
+              <form id="receiptForm" onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Supplier</label>
+                  <select name="supplier" required value={formData.supplier} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select supplier</option>
+                    <option value="ABC Suppliers Inc.">ABC Suppliers Inc.</option>
+                    <option value="XYZ Distribution">XYZ Distribution</option>
+                    <option value="Global Parts Ltd.">Global Parts Ltd.</option>
+                    <option value="Tech Components Co.">Tech Components Co.</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Expected Delivery Date</label>
+                  <input type="date" name="expectedDate" required value={formData.expectedDate} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Destination Warehouse</label>
+                  <select name="destination" value={formData.destination} onChange={handleInputChange} className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select warehouse</option>
+                    <option value="Main Warehouse">Main Warehouse</option>
+                    <option value="East Warehouse">East Warehouse</option>
+                    <option value="West Warehouse">West Warehouse</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-[#1e3a8a]">Notes</label>
+                  <textarea name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Additional information..." rows="3" className="w-full bg-[#f8fafc] border border-slate-200 text-slate-800 text-sm py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+              </form>
+            </div>
+
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white mt-auto">
+              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md font-semibold text-sm hover:bg-slate-50 transition-colors">
+                Cancel
+              </button>
+              <button form="receiptForm" type="submit" className="px-5 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-md font-semibold text-sm transition-colors shadow-sm">
+                Create Receipt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
