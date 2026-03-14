@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Package, AlertTriangle, FileInput, Truck,
     ArrowRightLeft, AlertCircle
@@ -8,6 +8,7 @@ import {
     CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import Sidebar from '../components/Sidebar';
+import { getDashboardStats } from '../services/api';
 import '../styles/dashboard.css';
 
 const stockTrendData = [
@@ -23,6 +24,31 @@ const categoryData = [
 ];
 
 export default function Dashboard() {
+    const [stats, setStats] = useState({
+        totalProducts: 0,
+        totalPhysicalStock: 0,
+        lowStockCount: 0,
+        pendingDeliveries: 0,
+        pendingReceipts: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await getDashboardStats();
+                if (res.data.success) {
+                    setStats(res.data.stats);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
+
     return (
         <div>
             <Sidebar />
@@ -33,29 +59,24 @@ export default function Dashboard() {
                     
                     <div className="card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Total Products</div>
+                            <div className="kpi-title">Total Products / Total Stock</div>
                             <Package size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>193</div>
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>
+                            {loading ? '...' : `${stats.totalProducts} / ${stats.totalPhysicalStock}`}
+                        </div>
                         <span className="badge badge-green">↗ in stock</span>
                     </div>
 
                     <div className="card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Low Stock</div>
+                            <div className="kpi-title">Low Stock Items</div>
                             <AlertTriangle size={18} color="#F97316" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#F97316', marginBottom: '15px' }}>2</div>
-                        <span className="badge badge-orange">Needs Reorder</span>
-                    </div>
-
-                    <div className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Out of Stock</div>
-                            <AlertCircle size={18} color="#EF4444" />
+                        <div className="kpi-value" style={{ color: '#F97316', marginBottom: '15px' }}>
+                            {loading ? '...' : stats.lowStockCount}
                         </div>
-                        <div className="kpi-value" style={{ color: '#EF4444', marginBottom: '15px' }}>0</div>
-                        <span className="badge" style={{ backgroundColor: '#FEE2E2', color: '#B91C1C' }}>Critical</span>
+                        <span className="badge badge-orange">Needs Reorder</span>
                     </div>
 
                     <div className="card">
@@ -63,7 +84,9 @@ export default function Dashboard() {
                             <div className="kpi-title">Pending Receipts</div>
                             <FileInput size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>2</div>
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>
+                            {loading ? '...' : stats.pendingReceipts}
+                        </div>
                         <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>Waiting</span>
                     </div>
 
@@ -72,17 +95,10 @@ export default function Dashboard() {
                             <div className="kpi-title">Pending Deliveries</div>
                             <Truck size={18} color="#3B82F6" />
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>2</div>
-                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>In Progress</span>
-                    </div>
-
-                    <div className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <div className="kpi-title">Scheduled Transfers</div>
-                            <ArrowRightLeft size={18} color="#3B82F6" />
+                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>
+                            {loading ? '...' : stats.pendingDeliveries}
                         </div>
-                        <div className="kpi-value" style={{ color: '#1F3A93', marginBottom: '15px' }}>1</div>
-                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>Scheduled</span>
+                        <span className="badge" style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8' }}>In Progress</span>
                     </div>
 
                 </div>
@@ -168,27 +184,37 @@ export default function Dashboard() {
                     </div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div style={{ backgroundColor: '#FFF7ED', padding: '16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                                <AlertTriangle size={20} color="#F97316" style={{ marginTop: '2px' }} />
-                                <div>
-                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1F2937' }}>2 products below reorder level</div>
-                                    <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Immediate action required</div>
+                        {stats.lowStockCount > 0 && (
+                            <div style={{ backgroundColor: '#FFF7ED', padding: '16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                                    <AlertTriangle size={20} color="#F97316" style={{ marginTop: '2px' }} />
+                                    <div>
+                                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1F2937' }}>{stats.lowStockCount} products below reorder level</div>
+                                        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Immediate action required</div>
+                                    </div>
                                 </div>
+                                <span style={{ backgroundColor: '#F97316', color: 'white', padding: '6px 16px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>Low Stock</span>
                             </div>
-                            <span style={{ backgroundColor: '#F97316', color: 'white', padding: '6px 16px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>Low Stock</span>
-                        </div>
+                        )}
                         
-                        <div style={{ backgroundColor: '#EFF6FF', padding: '16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                                <FileInput size={20} color="#3B82F6" style={{ marginTop: '2px' }} />
-                                <div>
-                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1F2937' }}>2 pending receipts</div>
-                                    <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Awaiting validation</div>
+                        {stats.pendingDeliveries > 0 && (
+                            <div style={{ backgroundColor: '#EFF6FF', padding: '16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                                    <Truck size={20} color="#3B82F6" style={{ marginTop: '2px' }} />
+                                    <div>
+                                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1F2937' }}>{stats.pendingDeliveries} pending deliveries</div>
+                                        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Awaiting validation</div>
+                                    </div>
                                 </div>
+                                <span style={{ backgroundColor: '#3B82F6', color: 'white', padding: '6px 16px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>Pending</span>
                             </div>
-                            <span style={{ backgroundColor: '#3B82F6', color: 'white', padding: '6px 16px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>Pending</span>
-                        </div>
+                        )}
+                        
+                        {stats.lowStockCount === 0 && stats.pendingDeliveries === 0 && (
+                            <div style={{ padding: '16px', color: '#6B7280', fontSize: '13px' }}>
+                                You are all caught up! No active alerts.
+                            </div>
+                        )}
                     </div>
                 </div>
 

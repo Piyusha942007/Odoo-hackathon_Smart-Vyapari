@@ -1,0 +1,4 @@
+STDOUT:Server running on port 5000
+
+STDOUT:Connected to the PostgreSQL database
+
