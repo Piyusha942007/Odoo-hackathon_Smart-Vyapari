@@ -1,15 +1,16 @@
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import StaffSidebar from './components/StaffSidebar';
-import StaffNavbar from './components/StaffNavbar'; // You can create a simple top bar
+import StaffNavbar from './components/StaffNavbar';
 
-const StaffLayout = ({ children }) => {
+const StaffLayout = () => {
   return (
-    <div className="layout-wrapper">
+    <div className="flex h-screen bg-[#f1f5f9] font-sans antialiased text-slate-800">
       <StaffSidebar />
-      <div className="main-content" style={{ flex: 1 }}>
-        <StaffNavbar /> 
-        <main style={{ padding: '30px' }}>
-          {children}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <StaffNavbar />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          <Outlet />
         </main>
       </div>
     </div>

@@ -2,9 +2,18 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import StaffLayout from './StaffLayout';
 import StaffDashboard from './pages/StaffDashboard';
-import Receipts from './pages/Receipts';
-// Import other pages as you create them
-// import Products from './pages/Products'; 
+import StaffProducts from './pages/StaffProducts';
+import StaffReceipts from './pages/StaffReceipts';
+import StaffMoveHistory from './pages/StaffMoveHistory';
+import StaffStockLedger from './pages/StaffStockLedger';
+
+// Placeholder Pages
+const PlaceholderPage = ({ title }) => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">{title}</h1>
+    <p>This page is under construction.</p>
+  </div>
+);
 
 const StaffRoutes = () => {
   return (
@@ -14,11 +23,15 @@ const StaffRoutes = () => {
         <Route index element={<Navigate to="/dashboard" replace />} />
         
         <Route path="dashboard" element={<StaffDashboard />} />
-        <Route path="receipts" element={<Receipts />} />
+        <Route path="products" element={<StaffProducts />} />
+        <Route path="receipts" element={<StaffReceipts />} />
+        <Route path="delivery-orders" element={<PlaceholderPage title="Delivery Orders" />} />
+        <Route path="internal-transfers" element={<PlaceholderPage title="Internal Transfers" />} />
+        <Route path="inventory-adjustments" element={<PlaceholderPage title="Inventory Adjustments" />} />
+        <Route path="move-history" element={<StaffMoveHistory />} />
+        <Route path="stock-ledger" element={<StaffStockLedger />} />
+        <Route path="settings" element={<PlaceholderPage title="Warehouse Settings" />} />
         
-        {/* Placeholder for other routes */}
-        <Route path="products" element={<div className="p-6">Products Page Coming Soon</div>} />
-        <Route path="internal-transfers" element={<div className="p-6">Transfers Page</div>} />
       </Route>
     </Routes>
   );
