@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#F8FAFC] text-slate-900;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-blue-100 hover:bg-white/10;
+  }
+  .sidebar-item-active {
+    @apply bg-white/20 text-white font-bold shadow-sm;
+  }
+  .odoo-card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden;
+  }
+  .btn-navy {
+    @apply bg-[#1F3A93] hover:bg-[#162a6b] text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md;
+  }
+  .btn-sky {
+    @apply bg-[#5DADE2] hover:bg-[#4a9cd1] text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md;
+  }
+}

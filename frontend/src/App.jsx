@@ -1,23 +1,14 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import StaffLayout from "./Staff/StaffLayout";
-import { StaffDashboard } from "./Staff/pages/StaffDashboard";
-import { InternalTransfers } from "./Staff/pages/InternalTransfers";
-import { StockCounting } from "./Staff/pages/StockCounting";
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import StaffRoutes from './Staff/StaffRoutes';
+import './styles/main.css'; // Your Tailwind imports
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* The Staff Layout wraps all your pages */}
-        <Route path="/staff" element={<StaffLayout />}>
-          <Route path="dashboard" element={<StaffDashboard />} />
-          <Route path="transfers" element={<InternalTransfers />} />
-          <Route path="counting" element={<StockCounting />} />
-        </Route>
-
-        {/* Redirect any basic access to your dashboard */}
-        <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
-      </Routes>
+      <div className="antialiased text-slate-900">
+        <StaffRoutes />
+      </div>
     </BrowserRouter>
   );
 }
